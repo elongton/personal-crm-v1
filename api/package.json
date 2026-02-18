@@ -7,7 +7,7 @@
     "dev:postgres": "tsx watch src/server.ts",
     "lint": "tsc --noEmit -p tsconfig.json",
     "build": "tsc -p tsconfig.json",
-    "test": "tsx --test test/**/*.test.ts",
+    "test": "tsx --test test/*.test.ts",
     "start": "node dist/server.js",
     "seed:mock": "tsx src/scripts/seedMockData.ts",
     "prisma:generate": "prisma generate",
