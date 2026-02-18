@@ -69,7 +69,13 @@ Key mock-mode endpoints:
 - `POST /ingestion/start`
 - `GET /ingestion/status`
 - `GET /coverage`
+- `GET /metrics`
 - `POST /ingestion/refresh`
+
+Backfill behavior:
+- Backfill runs in monthly chunks between `startIso` and `endIso`.
+- Checkpoints are persisted in `sync_checkpoints` to resume after failures.
+- `SYNC_FAIL_AFTER_CHUNKS=<n>` can be used in local tests to simulate a mid-run crash after `n` chunks.
 
 `GOOGLE_CONNECTOR_MODE=real` is scaffolded but intentionally throws TODO errors until real Gmail/Calendar adapters are wired.
 
@@ -87,18 +93,58 @@ The worker currently boots an in-memory queue and processes a no-op job for loca
 Baseline SQL lives at:
 - `api/prisma/migrations/0001_crm_v1.sql`
 
-Apply baseline to Postgres:
+### End-to-end local verification (Task 2)
+
+This is the exact local workflow used to verify baseline migration + API DB health against Postgres.
+
+1) Start local Postgres (Docker)
+```bash
+docker run --name personal-crm-pg \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=app \
+  -p 5432:5432 -d pgvector/pgvector:pg16
+```
+Expected output includes a container id (hex string).
+
+2) Apply baseline migration
 ```bash
 cd api
+export DB_MODE=postgres
 export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/app"
 npm run prisma:migrate:baseline
 ```
+Expected output includes:
+- `Script executed successfully.`
 
-Check migration status:
+3) Re-apply baseline (idempotency check)
 ```bash
-cd api
-export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/app"
+npm run prisma:migrate:baseline
+```
+Expected output includes:
+- `Script executed successfully.`
+
+4) Verify migration status
+```bash
 npm run prisma:migrate:status
+```
+Expected output includes:
+- `Database schema is up to date!`
+
+5) Start API against Postgres and check DB health
+```bash
+npm run dev:postgres
+# in another shell
+curl -s http://localhost:3000/db/health
+```
+Expected API response:
+```json
+{"ok":true,"database":"postgres","status":"healthy"}
+```
+
+6) Cleanup (optional)
+```bash
+docker stop personal-crm-pg && docker rm personal-crm-pg
 ```
 
 ## API endpoints

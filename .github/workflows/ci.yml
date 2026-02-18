@@ -45,11 +45,16 @@ jobs:
         run: npm run test
         working-directory: api
 
-      - name: Baseline migration apply + status
+      - name: Baseline migration apply + idempotency + status
         env:
           DB_MODE: postgres
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app
         run: |
           npm run prisma:migrate:baseline
+          npm run prisma:migrate:baseline
           npm run prisma:migrate:status
+        working-directory: api
+
+      - name: Retry/idempotency ingestion regression
+        run: npx tsx --test test/ingestion.test.ts
         working-directory: api
