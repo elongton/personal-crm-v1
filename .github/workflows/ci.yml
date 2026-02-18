@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: ["main"]
+
+jobs:
+  api-checks:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: app
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install API dependencies
+        run: npm ci
+        working-directory: api
+
+      - name: Lint
+        run: npm run lint
+        working-directory: api
+
+      - name: Build
+        run: npm run build
+        working-directory: api
+
+      - name: Test
+        run: npm run test
+        working-directory: api
+
+      - name: Baseline migration apply + status
+        env:
+          DB_MODE: postgres
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app
+        run: |
+          npm run prisma:migrate:baseline
+          npm run prisma:migrate:status
+        working-directory: api

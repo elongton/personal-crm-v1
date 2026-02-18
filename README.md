@@ -41,10 +41,35 @@ npm run dev
 If you want to run API dev against PostgreSQL instead:
 ```bash
 cd api
+export DB_MODE=postgres
 export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/app"
 npm run prisma:generate
 npm run dev:postgres
 ```
+
+### Running locally in mock mode (no external credentials)
+```bash
+cp .env.example .env
+cd api
+npm install
+set -a; source ../.env; set +a
+npm run dev:postgres
+```
+
+In another shell, run demo data seed:
+```bash
+cd api
+set -a; source ../.env; set +a
+npm run seed:mock
+```
+
+Key mock-mode endpoints:
+- `POST /auth/google/start` (returns deterministic mock callback URL)
+- `GET /auth/google/callback`
+- `POST /ingestion/start`
+- `GET /ingestion/status`
+- `GET /coverage`
+- `POST /ingestion/refresh`
 
 ### Worker
 ```bash

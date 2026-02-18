@@ -5,6 +5,7 @@
     "dev": "npm run dev:sqlite",
     "dev:sqlite": "cross-env DATABASE_URL=file:./prisma/dev.db npm run prisma:generate:sqlite && cross-env DATABASE_URL=file:./prisma/dev.db npm run prisma:db:push:sqlite && cross-env DATABASE_URL=file:./prisma/dev.db tsx watch src/server.ts",
     "dev:postgres": "tsx watch src/server.ts",
+    "lint": "tsc --noEmit -p tsconfig.json",
     "build": "tsc -p tsconfig.json",
     "test": "tsx --test test/**/*.test.ts",
     "start": "node dist/server.js",
