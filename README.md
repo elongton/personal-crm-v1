@@ -150,3 +150,44 @@ docker stop personal-crm-pg && docker rm personal-crm-pg
 ## API endpoints
 - `GET /health`
 - `GET /db/health`
+
+## UI MVP v1 (Dashboard + Contacts + Profile)
+
+The `web/` app now includes a shippable MVP shell focused on core CRM workflows:
+- Dashboard cards: sync status, coverage, due reminders, merge suggestions
+- Contacts list page
+- Contact profile page with timeline + relationship health score
+- Global search box UX (client-side filtering for now)
+- Loading, empty, and error states across primary views
+
+### Run locally
+```bash
+cd web
+npm install
+npm run dev
+```
+Open: `http://localhost:5173`
+
+To use live backend endpoints where available, set API base before running web:
+```bash
+export VITE_API_BASE="http://localhost:3000"
+npm run dev
+```
+
+### What is currently mocked in UI v1
+- Contacts dataset, contact profile details, and timeline events
+- Due reminders and merge suggestions cards on dashboard
+- Global search runs against in-memory contacts list
+
+### What uses backend endpoints today
+- `GET /ingestion/status` for sync status card (falls back to mock data if unavailable)
+- `GET /coverage` for coverage card (falls back to mock data if unavailable)
+
+### Screenshot instructions
+1. Start web app: `cd web && npm run dev`
+2. (Optional) Start API for live cards: `cd api && npm run dev`
+3. Capture these screens:
+   - Dashboard (`/`)
+   - Contacts list (`/contacts`)
+   - Contact profile (`/contacts/c_anna_01`)
+4. macOS shortcut: `Cmd + Shift + 4`, then drag to capture each screen.
