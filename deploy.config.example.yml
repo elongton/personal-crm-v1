@@ -1,0 +1,11 @@
+app_name: your-app
+services:
+  web:
+    image: ghcr.io/your-org/your-app-web:latest
+    port: 80
+  api:
+    image: ghcr.io/your-org/your-app-api:latest
+    port: 3000
+env:
+  DATABASE_URL: postgresql://postgres:postgres@db:5432/app
+  VITE_API_BASE: https://api.example.com
