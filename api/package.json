@@ -11,6 +11,8 @@
     "prisma:generate:sqlite": "prisma generate --schema prisma/schema.sqlite.prisma",
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:migrate:baseline": "prisma db execute --schema prisma/schema.prisma --file prisma/migrations/0001_crm_v1.sql",
+    "prisma:migrate:status": "prisma migrate status",
     "prisma:db:push:sqlite": "prisma db push --schema prisma/schema.sqlite.prisma"
   },
   "dependencies": {

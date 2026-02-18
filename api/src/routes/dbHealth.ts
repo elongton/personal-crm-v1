@@ -9,7 +9,7 @@ export async function dbHealthRoutes(app: FastifyInstance) {
 
     const prisma = getPrisma();
     // simple query to validate connectivity
-    await prisma.example.findFirst();
+    await prisma.$queryRaw`SELECT 1`;
     return { ok: true, dbEnabled: true };
   });
 }

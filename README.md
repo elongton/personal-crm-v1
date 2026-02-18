@@ -12,6 +12,9 @@ Tiny edit.
 .
 ├─ web/
 ├─ api/
+├─ worker/
+├─ packages/
+│  └─ contracts/
 ├─ .github/workflows/deploy.yml
 ├─ deploy.config.example.yml
 └─ README.md
@@ -41,6 +44,34 @@ cd api
 export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/app"
 npm run prisma:generate
 npm run dev:postgres
+```
+
+### Worker
+```bash
+cd worker
+npm install
+npm run dev
+```
+
+The worker currently boots an in-memory queue and processes a no-op job for local verification.
+
+## Postgres migration workflow (M1 baseline)
+
+Baseline SQL lives at:
+- `api/prisma/migrations/0001_crm_v1.sql`
+
+Apply baseline to Postgres:
+```bash
+cd api
+export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/app"
+npm run prisma:migrate:baseline
+```
+
+Check migration status:
+```bash
+cd api
+export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/app"
+npm run prisma:migrate:status
 ```
 
 ## API endpoints

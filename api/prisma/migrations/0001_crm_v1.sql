@@ -1,6 +1,7 @@
 -- Draft SQL migration for Personal CRM V1
 -- Postgres + pgvector
 
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE EXTENSION IF NOT EXISTS vector;
 
 CREATE TABLE IF NOT EXISTS tenants (
