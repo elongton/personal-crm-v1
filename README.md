@@ -71,6 +71,8 @@ Key mock-mode endpoints:
 - `GET /coverage`
 - `POST /ingestion/refresh`
 
+`GOOGLE_CONNECTOR_MODE=real` is scaffolded but intentionally throws TODO errors until real Gmail/Calendar adapters are wired.
+
 ### Worker
 ```bash
 cd worker

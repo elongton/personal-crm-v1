@@ -1,3 +1,5 @@
+import { config } from "../../lib/config";
+
 export interface GmailItem {
   id: string;
   updatedAt: string;
@@ -55,6 +57,19 @@ class MockGoogleConnector implements GoogleConnector {
   }
 }
 
+class StubGoogleConnector implements GoogleConnector {
+  async fetchGmail(): Promise<GmailItem[]> {
+    // TODO(task-4): implement real Gmail adapter with pagination + retry/backoff.
+    throw new Error("GOOGLE_CONNECTOR_MODE=real is not implemented yet");
+  }
+
+  async fetchCalendar(): Promise<CalendarItem[]> {
+    // TODO(task-4): implement real Calendar adapter with pagination + retry/backoff.
+    throw new Error("GOOGLE_CONNECTOR_MODE=real is not implemented yet");
+  }
+}
+
 export function createGoogleConnector(): GoogleConnector {
-  return new MockGoogleConnector();
+  const mode = process.env.GOOGLE_CONNECTOR_MODE ?? (config.googleAuthMode === "mock" ? "mock" : "real");
+  return mode === "mock" ? new MockGoogleConnector() : new StubGoogleConnector();
 }
