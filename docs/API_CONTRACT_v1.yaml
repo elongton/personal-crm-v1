@@ -1,0 +1,123 @@
+openapi: 3.0.3
+info:
+  title: Personal CRM V1 API
+  version: 0.1.0
+servers:
+  - url: https://api.personal-crm-v1.maxlongton.com
+paths:
+  /auth/google/start:
+    post:
+      summary: Start Google OAuth flow
+      responses:
+        '200': { description: OK }
+  /auth/google/callback:
+    get:
+      summary: OAuth callback
+      responses:
+        '200': { description: Connected }
+  /ingestion/start:
+    post:
+      summary: Start 12-month backfill
+      requestBody:
+        required: false
+      responses:
+        '202': { description: Enqueued }
+  /ingestion/status:
+    get:
+      summary: Get ingestion/sync status
+      responses:
+        '200': { description: Status payload }
+  /coverage:
+    get:
+      summary: Contact coverage stats
+      responses:
+        '200': { description: Coverage payload }
+  /merge-suggestions:
+    get:
+      summary: List pending merge suggestions
+      responses:
+        '200': { description: Suggestions list }
+  /merge-suggestions/{id}/confirm:
+    post:
+      summary: Confirm merge suggestion
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Merge applied }
+  /merge-suggestions/{id}/reject:
+    post:
+      summary: Reject merge suggestion
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Suggestion rejected }
+  /profile/{contactId}:
+    get:
+      summary: Get contact profile + interaction timeline
+      parameters:
+        - name: contactId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Contact profile }
+  /reminders:
+    get:
+      summary: List reminders
+      responses:
+        '200': { description: Reminder list }
+    post:
+      summary: Create reminder
+      responses:
+        '201': { description: Reminder created }
+  /reminders/{id}/snooze:
+    post:
+      summary: Snooze reminder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Snoozed }
+  /reminders/{id}/done:
+    post:
+      summary: Mark reminder done
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Completed }
+  /search:
+    post:
+      summary: Natural-language contact search
+      requestBody:
+        required: true
+      responses:
+        '200': { description: Ranked results }
+components:
+  schemas:
+    Contact:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        canonicalName: { type: string }
+        primaryEmail: { type: string }
+        company: { type: string, nullable: true }
+        title: { type: string, nullable: true }
+        healthScore: { type: number }
+    Reminder:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        contactId: { type: string, format: uuid }
+        status: { type: string, enum: [open, snoozed, done] }
+        dueAt: { type: string, format: date-time }
