@@ -26,8 +26,13 @@ const syncRunsMem: SyncRun[] = [];
 const sourceItemMem = new Map<string, SourceItemInput>();
 const contactsMem = new Map<string, { id: string; tenantId: string; email: string; name: string }>();
 const interactionsMem: Array<{ id: string; tenantId: string; contactId: string; type: "email" | "meeting" }> = [];
+const checkpointsMem = new Map<string, string>();
 
 const hasDb = () => process.env.DB_MODE === "postgres" && Boolean(process.env.DATABASE_URL);
+
+function checkpointKey(tenantId: string, kind: "backfill" | "daily"): string {
+  return `${tenantId}:${kind}`;
+}
 
 export async function createSyncRun(tenantId: string, kind: "backfill" | "daily"): Promise<SyncRun> {
   const id = crypto.randomUUID();
@@ -190,4 +195,37 @@ export async function getCoverage(tenantId: string): Promise<{ contacts: number;
     prisma.$queryRawUnsafe<Array<{ count: bigint }>>(`SELECT count(*)::bigint AS count FROM source_items WHERE tenant_id=$1`, tenantId),
   ]);
   return { contacts: Number(c[0]?.count ?? 0), interactions: Number(i[0]?.count ?? 0), sourceItems: Number(s[0]?.count ?? 0) };
+}
+
+export async function getCheckpoint(tenantId: string, kind: "backfill" | "daily"): Promise<string | null> {
+  if (!hasDb()) return checkpointsMem.get(checkpointKey(tenantId, kind)) ?? null;
+
+  const prisma = getPrisma();
+  const rows = await prisma.$queryRawUnsafe<Array<{ last_completed_window_end: Date }>>(
+    `SELECT last_completed_window_end FROM sync_checkpoints WHERE tenant_id=$1 AND kind=$2 LIMIT 1`,
+    tenantId,
+    kind,
+  );
+  const row = rows[0];
+  return row?.last_completed_window_end?.toISOString() ?? null;
+}
+
+export async function setCheckpoint(tenantId: string, kind: "backfill" | "daily", lastCompletedWindowEndIso: string): Promise<void> {
+  if (!hasDb()) {
+    checkpointsMem.set(checkpointKey(tenantId, kind), lastCompletedWindowEndIso);
+    return;
+  }
+
+  const prisma = getPrisma();
+  await prisma.$executeRawUnsafe(
+    `
+      INSERT INTO sync_checkpoints (tenant_id, kind, last_completed_window_end, updated_at)
+      VALUES ($1,$2,$3, now())
+      ON CONFLICT (tenant_id, kind)
+      DO UPDATE SET last_completed_window_end=EXCLUDED.last_completed_window_end, updated_at=now();
+    `,
+    tenantId,
+    kind,
+    lastCompletedWindowEndIso,
+  );
 }

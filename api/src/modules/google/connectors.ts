@@ -24,34 +24,42 @@ export interface GoogleConnector {
   fetchCalendar(params: { tenantId: string; startIso: string; endIso: string }): Promise<CalendarItem[]>;
 }
 
-const FIXED_NOW = new Date("2026-02-18T12:00:00.000Z").toISOString();
-const FIXED_EMAIL_TIME = new Date("2026-02-17T12:00:00.000Z").toISOString();
-const FIXED_MEETING_TIME = new Date("2026-02-16T12:00:00.000Z").toISOString();
+function monthKey(iso: string): string {
+  return iso.slice(0, 7);
+}
+
+function occurredAtForWindow(startIso: string): string {
+  const start = new Date(startIso);
+  start.setUTCDate(Math.min(15, start.getUTCDate()));
+  return start.toISOString();
+}
 
 class MockGoogleConnector implements GoogleConnector {
-  async fetchGmail(): Promise<GmailItem[]> {
+  async fetchGmail(params: { tenantId: string; startIso: string }): Promise<GmailItem[]> {
+    const month = monthKey(params.startIso);
     return [
       {
-        id: "gmail-1",
-        updatedAt: FIXED_NOW,
+        id: `gmail-${month}`,
+        updatedAt: params.startIso,
         fromEmail: "alex@example.com",
         fromName: "Alex Example",
-        subject: "Quarterly check-in",
+        subject: `Quarterly check-in (${month})`,
         snippet: "Let's catch up next week",
-        occurredAt: FIXED_EMAIL_TIME,
+        occurredAt: occurredAtForWindow(params.startIso),
       },
     ];
   }
 
-  async fetchCalendar(): Promise<CalendarItem[]> {
+  async fetchCalendar(params: { tenantId: string; startIso: string }): Promise<CalendarItem[]> {
+    const month = monthKey(params.startIso);
     return [
       {
-        id: "cal-1",
-        updatedAt: FIXED_NOW,
+        id: `cal-${month}`,
+        updatedAt: params.startIso,
         organizerEmail: "sam@example.com",
         organizerName: "Sam Calendar",
-        summary: "Project sync",
-        occurredAt: FIXED_MEETING_TIME,
+        summary: `Project sync (${month})`,
+        occurredAt: occurredAtForWindow(params.startIso),
       },
     ];
   }

@@ -18,7 +18,7 @@ function keyOf(tenantId: string, provider: string, subject: string): string {
 }
 
 function dbEnabled(): boolean {
-  return Boolean(process.env.DATABASE_URL);
+  return process.env.DB_MODE === "postgres" && Boolean(process.env.DATABASE_URL);
 }
 
 export async function upsertOAuthAccount(record: OAuthAccountRecord): Promise<void> {

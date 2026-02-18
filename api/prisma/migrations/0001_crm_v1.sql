@@ -58,6 +58,14 @@ CREATE TABLE IF NOT EXISTS source_items (
   UNIQUE(tenant_id, source, external_id)
 );
 
+CREATE TABLE IF NOT EXISTS sync_checkpoints (
+  tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+  kind TEXT NOT NULL CHECK (kind IN ('backfill','daily')),
+  last_completed_window_end TIMESTAMPTZ NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (tenant_id, kind)
+);
+
 CREATE TABLE IF NOT EXISTS contacts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
@@ -125,4 +133,5 @@ CREATE TABLE IF NOT EXISTS embeddings (
 CREATE INDEX IF NOT EXISTS idx_contacts_tenant_email ON contacts(tenant_id, primary_email);
 CREATE INDEX IF NOT EXISTS idx_interactions_contact_time ON interactions(contact_id, occurred_at DESC);
 CREATE INDEX IF NOT EXISTS idx_sync_runs_tenant_started ON sync_runs(tenant_id, started_at DESC);
+CREATE INDEX IF NOT EXISTS idx_sync_checkpoints_tenant_updated ON sync_checkpoints(tenant_id, updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_reminders_tenant_status ON reminders(tenant_id, status, due_at);

@@ -10,6 +10,7 @@ function get(key: string, fallback?: string): string {
 
 export const config = {
   port: Number(process.env.PORT ?? 3000),
+  dbMode: process.env.DB_MODE ?? "mock",
   appBaseUrl: process.env.APP_BASE_URL ?? "http://localhost:3000",
   googleAuthMode: (process.env.GOOGLE_AUTH_MODE ?? "mock") as GoogleAuthMode,
   googleClientId: process.env.GOOGLE_CLIENT_ID,
